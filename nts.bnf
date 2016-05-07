@@ -1,80 +1,73 @@
-message ::= preamble break address phone break text break signature end
+# (E)BNF grammar for voiced National Traffic Service messages
+#
+# Preliminary - Work in progress!
+#
+# Berke Durak VA7OBD <berke.durak@gmail.com>
+#
+# Version 0.1 - 2016-05-07
+#
+# http://github.com/berke/nts-grammar
 
-text ::= text-element | text-element X text
+start ::= message
 
-text-element ::= sentence | fg number | int (letter ' ')+ | mg ( (letter | digit) ' ' )+
+# A (simple) message starts with the word "Number" and then contains the preamble,
+# the destination address and phone number, then the message text and the
+# signature.
 
-sentence ::= object 'is' adjective
+message ::= proword-number preamble address phone break text break signature end
 
-object ::= 'the farm' | 'the tree' | 'the road'
-
-adjective ::= 'burning' | 'okay' | 'on fire' | 'flooded' | 'damaged' | 'repaired'
-
-signature ::= name
-
-end ::= 'end and no more'
-
-break ::= nl 'break' nl
-
-mg ::= 'mixed group'
-
-fg ::= 'figures'
-
-int ::= 'initials'
-
-nl ::= '\n'
-
-preamble ::= message-number s precedence s hx s station-of-origin s check place-of-origin [time-filed] date
+# The "s" production is basically a pause.  It is defined here to produce a dot
+# and two new lines as this is useful when using this grammar to automatically
+# generate random messages, but it can be replaced with an empty space.
 
 s ::= '.\n\n'
 
-place-of-origin ::= town province
+# The preamble has a message number, a precedence, handling
+# instructions, the callsign of the station of origin, the check which
+# is a count of the number of groups (basically words) in the message
+# body, the place of origin, an optional timestamp indicating when the
+# message was filed, and the date
 
-address ::= name big-number road-name road-type town province postal-code
+preamble ::=
+  message-number precedence hx
+  station-of-origin check
+  place-of-origin
+  [time-filed] date
 
-phone ::= fg area-code.local-number
-
-area-code ::= ('2'|'3'|'4'|'5'|'6'|'7'|'8').digit.digit
-
-local-number ::= digit-nz.digit.digit.digit.digit.digit.digit
-
-name ::= first-name last-name
-
-first-name ::= 'John' | 'Mary'
-
-last-name ::= 'Johnson' | 'Robertson'
-
-postal-code ::= mg letter digit letter digit letter digit
-
-road-name ::= 'Lakeside' | 'Canada' | 'Farm' | 'Parliament'
-
-road-type ::= 'avenue' | 'road' | 'boulevard'
-
-town ::= town-thing.'town'
-
-town-thing ::= 'Spring'|'Beaver'|'Cobble'|'Mountain'|'Forest'
-
-time-filed ::= hours.minutes
-
-hours ::= (nothing|'1').digit-nz | '2'.('0'|'1'|'2'|'3')
-
-nothing ::= ''
-
-minutes ::= ('0'|'1'|'2'|'3'|'4'|'5').digit-nz
-
-province ::= 'AB'|'BC'|'MN'|'ON'|'SK'|'QC'
+# The message number is just a number.  The number production is defined later.
 
 message-number ::= number
 
-precedence ::= ['exercise'] (R | W | P | E)
+# The precedence is either routine, welfare, priority or emergency.
+# According to the NTS handbook this is voiced as the actual word and not the
+# phonetic for the initial.
+#
+# The precedence can optionally (in the grammar sense) be prefixed by
+# the word "exercise".
 
-hx ::= H X handling
+precedence ::= ['exercise'] ('routine' | 'welfare' | 'priority' | 'emergency')
 
-handling ::= hx-collect-call | hx-timeout | hx-report-tod | hx-report-id | hx-get-reply | hx-hold-until | hx-mail-or-landline
+# Handling instructions start with H X (given phonetically) then the
+# handling code.  Some handling codes have a numerical or date
+# argument.
+#
+# NOTE: In this grammar, single-letter uppercase productions refer to
+# the IPA pronunciation of the corresponding letter.
+
+hx ::= H X handling-code
+
+handling-code ::=
+  hx-collect-call
+| hx-timeout
+| hx-report-tod
+| hx-report-id
+| hx-get-reply
+| hx-hold-until
+| hx-mail-or-landline
 
 hx-collect-call ::= A [small-number]
 
-hx-timeout ::= B [small-number]
+hx-timeout ::= B small-number
 
 hx-report-tod ::= C
 
@@ -86,29 +79,189 @@ hx-hold-until ::= F date
 
 hx-mail-or-landline ::= G
 
-date ::= decimal-month.decimal-day
+# The place of origin is simply the coarse location of the signatory of the message.
+# It will usually be a town and a Canadian province or U.S. state
+
+place-of-origin ::= town province-or-state
+
+# Here are some example towns used when generating random messages.
+
+town ::=
+  'centerville' i-spell C E N T E R V I L L E
+| 'fairview' i-spell F A I R V I E W
+| 'franklin' i-spell F R A N K L I N
+
+# The province or state is given as two letters voiced phonetically, preceded by the pro-word
+# 'initials'
+
+province-or-state ::= initials (ca-province | us-state)
+
+ca-province ::= A B | B C | M N | O N | S K | Q C
+
+us-state ::= W A | N Y | C A | T X
+
+# Here is a production for generating some simple fake addresses.
+
+address ::= name local-address town province-or-state postal-code
+
+local-address ::= big-number road-name road-type 
+
+# Location names should be spelled out
+
+road-name ::=
+  'first' i-spell F I R S T
+| 'park' i-spell P A R K
+| 'main' i-spell M A I N
+| 'oak' i-spell O A K
+
+road-type ::= 'avenue' | 'road' | 'boulevard' | 'street'
+
+postal-code ::= postal-code-us | postal-code-ca
+
+postal-code-us ::= figures digit digit digit digit digit
+
+postal-code-ca ::= mixed-group-letters letter digit letter digit letter digit
+
+# The following generates some names
+
+name ::= first-name last-name
+
+first-name ::= 'james' | 'john' | 'mary' | 'patricia'
+
+# Last names should be spelled out
+
+last-name ::=
+  'smith' i-spell S M I T H
+| 'johnson' i-spell J O H N S O N
+| 'williams' i-spell W I L L I A M S
+
+# Phone numbers should start with "phone figures" and include the area code and the local number
+# It is not clear how extensions, if any, would be handled.
+
+phone ::= 'phone figures' area-code local-number
+
+area-code ::= ('2'|'3'|'4'|'5'|'6'|'7'|'8') digit digit
+
+local-number ::= digit-nz digit digit digit digit digit digit
+
+# The filing time should be given as three or four digits using 24-hour time and minutes,
+# but omitting a leading zero in the hours.
+#
+# If not specified, the time zone is Universal Coordinated Time (UTC) aka zulu time,
+# but this can be specified explcitly by adding a Z (spoken phonetically)
+#
+# If the time is local an L must be added.  This should only be used for intra-provincial
+# communications.
+
+time-filed ::= hours.minutes.[timezone]
+
+timezone ::= L | Z
+
+hours ::= (nothing|'1').digit-nz | '2'.('0'|'1'|'2'|'3')
+
+nothing ::= ''
+
+minutes ::= ('0'|'1'|'2'|'3'|'4'|'5').digit-nz
+
+# The message is either an ARL message, or an abitrary sequence of groups.
+
+# NOTE: The EBNF format does not have a convenient way of specifying a
+# numerical repetition limit, so in this grammar the length of the
+# text is unlimited.
+
+text ::= arl-text | arbitrary-text
+
+# An ARL message references exactly one canned ARL message identified
+# by its number.  The canned ARL messages may have one or more blanks
+# to be filled by extra groups.  In that case the content comes after.
+# The number of extra groups should be equal to or larger than the
+# number of blanks in the canned message.  If it is larger, operator
+# common sense is used to distribute the groups amongst the blanks.
+
+arl-text ::= arl small-number
+
+arbitrary-text ::= (group X)* group+
+
+# A group can be an english word, figures (a group of numbers), initials (a group of
+# letters), a mixed group (numbers and letters) or an ARL message invocation
+
+group ::= sentence | group-figures | group-initials | group-mixed
+
+# We just define a very small grammar to generate some english sentences.
+
+sentence ::=
+  'the' ('building' | 'house' | 'factory' | 'farm') 'at' local-address 'is' ('on fire' | 'flooded' | 'repaired')
+| 'need more' ('water' | 'food' | 'blankets' | 'tents' | 'penicilline')
+| name ('is ok'|'was injured on' date|'is recovering at' town 'hospital'|'is unfortunately deceased'|'missing since' date)
+| 'send' ('help'|'ambulance'|'firefighters'|'mechanic')
+| 'regards'
+| 'access code is' group-mixed
+
+# Numbers should start with the proword 'figures'
+
+group-figures ::= figures number
+
+# Initials should start with the proword 'initials'
+
+group-initials ::= initials letter+
+
+# Mixed groups should start with the prowords 'mixed group letters' if they
+# start with a letter, or 'mixed group figures' if they start with a number.
+
+group-mixed ::=
+  mixed-group-letters letter+ digit (letter | digit)*
+| mixed-group-figures digit+ letter (letter | digit)*
+
+# The signature is just the name of the person who originated the message.
+
+signature ::= name
+
+# The transmission is finished with "end and no more"
+
+# Dates are voiced as the english month, but written down using the first three letters of the
+# name of the month, followed by the day of the month given without a leading zero.
+#
+# Dates must match the timezone used in the timestamp.  If there is no timestamp, UTC is assumed.
+
+date ::= month decimal-day
+
+month ::= 'January'|'February'|'March'|'April'|'May'|'June'|'July'|'August'|'September'|'December'
+
+decimal-day ::= ('1'|'2') digit-nz | '3' ('0'|'1')
 
 decimal-month ::= digit-nz | '1'.('0'|'1'|'2')
 
-decimal-day ::= ('0'|'1'|'2').digit-nz | '3'.('0'|'1')
-
-small-number ::= digit-nz | digit-nz.digit
-
-big-number ::= digit-nz.digit.digit | digit-nz.digit.digit.digit
+# The station of origin is a callsign.
 
 station-of-origin ::= callsign
+
+# Here is a simple production for generating (some) Canadian callsigns.
 
 callsign ::= callsign-ca
 
 callsign-ca ::= V (A|E) ('1'|'2'|'3'|'4'|'5'|'6'|'7') letter letter [letter]
 
-letter ::= A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z
+# The check field is simply the group count.
+#
+# - If prefixed by 'ARL' then it indicates that the body is an ARL
+#   message.  The number of the ARL message is given in the body of
+#   the message, the number in the check field is not the number of
+#   the ARL message.
+#
+# - If a correction to the check count has been made by an operator
+#   along the transmission chain then the original count is still
+#   given first, and the two counts are separated by the words
+#   'corrected to' which is written as a slash.
+#
+# NOTE: For technical reasons this grammar does not enforce the
+# relationship between 'ARL' in the check field and 'ARL' in the
+# message body.
 
-check ::= count | count slash count
+check ::= [arl] (count | count 'corrected to' count)
 
 count ::= digit-nz | '1'.digit-nz | '2'.('0'|'1'|'2'|'3'|'4'|'5')
 
-slash ::= 'slash'
+# Here is the International Phonetic Alphabet (IPA)
 
 A ::= 'alpha'
 
@@ -162,10 +315,44 @@ Y ::= 'yankee'
 
 Z ::= 'zulu'
 
+letter ::= A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z
+
+# The following productions are used to define numbers
+
 number ::= digit-nz.digit*
 
 digit-nz ::= '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
 
 digit ::= '0'|digit-nz
 
-start ::= message
+small-number ::= digit-nz | digit-nz.digit
+
+big-number ::= digit-nz.digit.digit | digit-nz.digit.digit.digit
+
+# Prowords (procedure words) are wrapped in grammar productions for
+# clarity.  They are produced using upper case.
+#
+# Proword escaping: If a pro-word appears in any of the message
+# fields (text body, addresses, etc.)  and if there is a possibility
+# of confusion, the operator may use the "I SPELL" construct to
+# distinguish it from pro-words.
+
+proword-number ::= 'NUMBER'
+
+arl ::= 'ARL'
+
+i-spell ::= 'I SPELL'
+
+initials ::= 'INITIALS'
+
+figures ::= 'FIGURES'
+
+mixed-group-figures ::= 'MIXED GROUP FIGURES'
+
+mixed-group-letters ::= 'MIXED GROUP LETTERS'
+
+break ::= 'BREAK'
+
+end ::= 'END'
+
+end-and-no-more ::= 'END AND NO MORE'
