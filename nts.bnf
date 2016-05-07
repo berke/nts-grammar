@@ -8,13 +8,24 @@
 #
 # http://github.com/berke/nts-grammar
 
-start ::= message
+start ::= sable-preamble start-production sable-postamble
+
+start-production ::= message
+#start-production ::= sentence
+
+sable-preamble ::= '<?xml version="1.0"?>
+<!DOCTYPE SABLE PUBLIC "-//SABLE//DTD SABLE speech mark up//EN"
+      "Sable.v0_2.dtd"
+[]>
+<SABLE><SPEAKER NAME="male1"><RATE SPEED="-20%">'
+
+sable-postamble ::= '</RATE></SPEAKER></SABLE>'
 
 # A (simple) message starts with the word "Number" and then contains the preamble,
 # the destination address and phone number, then the message text and the
 # signature.
 
-message ::= preamble big-pause address pause phone break text break signature pause end-and-no-more
+message ::= preamble big-pause address pause phone pause break pause text pause break pause signature pause end-and-no-more
 
 # The "s" production is basically a pause.  It is defined here to produce a dot
 # and two new lines as this is useful when using this grammar to automatically
@@ -85,7 +96,7 @@ hx-mail-or-landline ::= G
 # The place of origin is simply the coarse location of the signatory of the message.
 # It will usually be a town and a Canadian province or U.S. state
 
-place-of-origin ::= town province-or-state
+place-of-origin ::= town pause province-or-state
 
 # Here are some example towns used when generating random messages.
 
@@ -105,9 +116,9 @@ us-state ::= W A | N Y | C A | T X
 
 # Here is a production for generating some simple fake addresses.
 
-address ::= name local-address town province-or-state postal-code
+address ::= name pause local-address pause town pause province-or-state pause postal-code
 
-local-address ::= big-number road-name road-type 
+local-address ::= big-number pause road-name pause road-type
 
 # Location names should be spelled out
 
@@ -121,13 +132,13 @@ road-type ::= 'avenue' | 'road' | 'boulevard' | 'street'
 
 postal-code ::= postal-code-us | postal-code-ca
 
-postal-code-us ::= figures digit digit digit digit digit
+postal-code-us ::= figures digit pause digit pause digit pause digit pause digit
 
-postal-code-ca ::= mixed-group-letters letter digit letter digit letter digit
+postal-code-ca ::= mixed-group-letters letter digit pause letter digit pause letter digit
 
 # The following generates some names
 
-name ::= first-name last-name
+name ::= first-name pause last-name
 
 first-name ::= 'james' | 'john' | 'mary' | 'patricia'
 
@@ -143,9 +154,9 @@ last-name ::=
 
 phone ::= phone-figures area-code local-number
 
-area-code ::= ('2'|'3'|'4'|'5'|'6'|'7'|'8') digit digit
+area-code ::= ('2'|'3'|'4'|'5'|'6'|'7'|'8') pause digit pause digit pause pause
 
-local-number ::= digit-nz digit digit digit digit digit digit
+local-number ::= digit-nz pause digit pause digit pause digit pause digit pause digit pause digit
 
 # The filing time should be given as three or four digits using 24-hour time and minutes,
 # but omitting a leading zero in the hours.
@@ -181,9 +192,9 @@ text ::= arl-text | arbitrary-text
 # number of blanks in the canned message.  If it is larger, operator
 # common sense is used to distribute the groups amongst the blanks.
 
-arl-text ::= arl small-number
+arl-text ::= arl pause small-number
 
-arbitrary-text ::= (group X)* group+
+arbitrary-text ::= (group pause X)* (group pause)+
 
 # A group can be an english word, figures (a group of numbers), initials (a group of
 # letters), a mixed group (numbers and letters) or an ARL message invocation
@@ -193,19 +204,19 @@ group ::= sentence | group-figures | group-initials | group-mixed
 # We just define a very small grammar to generate some english sentences.
 
 sentence ::=
-  'the' ('building' | 'house' | 'factory' | 'farm') 'at' local-address 'is' ('on fire' | 'flooded' | 'repaired')
-| 'need more' ('water' | 'food' | 'blankets' | 'tents' | 'penicilline')
-| name ('is ok'|'was injured on' date 'condition' ('stable'|'critical') | 'is recovering at' town 'hospital'|'is unfortunately deceased'|'missing since' date)
+  'the' ('building' | 'house' | 'factory' | 'farm') pause 'at' local-address pause 'is' ('on fire' | 'flooded' | 'repaired')
+| 'need more' pause ('water' | 'food' | 'blankets' | 'tents' | 'penicilline')
+| name pause ('is ok'|'was injured on' pause date pause 'condition' pause ('stable'|'critical') | 'is recovering at' pause town pause 'hospital'|'is unfortunately' pause 'deceased'|'missing' pause 'since' pause date)
 | 'send' ('help'|'ambulance'|'firefighters'|'mechanic')
-| 'send' small-number ('l of water' | 'doses of peniciline' | 'rations of food' | 'pills of iodine' | 'radiation suits' | 'air filters') ('urgently' | 'as soon as possible' | 'when convenient')
+| 'send' pause small-number pause ('l of water' | 'doses of peniciline' | 'rations of food' | 'pills of iodine' | 'radiation suits' | 'air filters') ('urgently' | 'as soon as possible' | 'when convenient') pause pause
 | 'regards'
-| ('smoke'|'radiation'|'water level') ('increasing'|'decreasing'|'stable')
-| small-number 'persons sheltered at' local-address
-| 'access code is' group-mixed
+| ('smoke'|'radiation'|'water level') pause ('increasing'|'decreasing'|'stable')
+| small-number pause 'persons' pause 'sheltered at' pause local-address
+| 'access' pause 'code' pause 'is' pause group-mixed
 
 # Numbers should start with the proword 'figures'
 
-group-figures ::= figures number
+group-figures ::= figures pause number
 
 # Initials should start with the proword 'initials'
 
@@ -215,8 +226,8 @@ group-initials ::= initials letter+
 # start with a letter, or 'mixed group figures' if they start with a number.
 
 group-mixed ::=
-  mixed-group-letters letter+ digit (letter | digit)*
-| mixed-group-figures digit+ letter (letter | digit)*
+  mixed-group-letters pause letter+ digit pause (letter | digit pause)*
+| mixed-group-figures pause (digit pause)+ letter (letter | digit pause)*
 
 # The signature is just the name of the person who originated the message.
 
@@ -229,7 +240,7 @@ signature ::= name
 #
 # Dates must match the timezone used in the timestamp.  If there is no timestamp, UTC is assumed.
 
-date ::= month decimal-day
+date ::= month '.' decimal-day
 
 month ::= 'January'|'February'|'March'|'April'|'May'|'June'|'July'|'August'|'September'|'December'
 
@@ -245,7 +256,7 @@ station-of-origin ::= callsign
 
 callsign ::= callsign-ca
 
-callsign-ca ::= V (A|E) ('1'|'2'|'3'|'4'|'5'|'6'|'7') letter letter [letter]
+callsign-ca ::= V (A|E) ('1'|'2'|'3'|'4'|'5'|'6'|'7') pause letter letter [letter]
 
 # The check field is simply the group count.
 #
@@ -269,57 +280,57 @@ count ::= digit-nz | '1'.digit-nz | '2'.('0'|'1'|'2'|'3'|'4'|'5')
 
 # Here is the International Phonetic Alphabet (IPA)
 
-A ::= 'alpha'
+A ::= 'alpha' pause
 
-B ::= 'bravo'
+B ::= 'bravo' pause
 
-C ::= 'charlie'
+C ::= 'charlie' pause
 
-D ::= 'delta'
+D ::= 'delta' pause
 
-E ::= 'echo'
+E ::= 'echo' pause
 
-F ::= 'foxtrot'
+F ::= 'foxtrot' pause
 
-G ::= 'golf'
+G ::= 'golf' pause
 
-H ::= 'hotel'
+H ::= 'hotel' pause
 
-I ::= 'india'
+I ::= 'india' pause
 
-J ::= 'juliet'
+J ::= 'juliet' pause
 
-K ::= 'kilo'
+K ::= 'kilo' pause
 
-L ::= 'lima'
+L ::= 'lima' pause
 
-M ::= 'mike'
+M ::= 'mike' pause
 
-N ::= 'november'
+N ::= 'november' pause
 
-O ::= 'oscar'
+O ::= 'oscar' pause
 
-P ::= 'papa'
+P ::= 'papa' pause
 
-Q ::= 'quebec'
+Q ::= 'quebec' pause
 
-R ::= 'romeo'
+R ::= 'romeo' pause
 
-S ::= 'sierra'
+S ::= 'sierra' pause
 
-T ::= 'tango'
+T ::= 'tango' pause
 
-U ::= 'uniform'
+U ::= 'uniform' pause
 
-V ::= 'victor'
+V ::= 'victor' pause
 
-W ::= 'whisky'
+W ::= 'whisky' pause
 
-X ::= 'x-ray'
+X ::= 'x-ray' pause
 
-Y ::= 'yankee'
+Y ::= 'yankee' pause
 
-Z ::= 'zulu'
+Z ::= 'zulu' pause
 
 letter ::= A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z
 
@@ -349,22 +360,22 @@ proword-number ::= 'NUMBER'
 
 arl ::= 'ARL'
 
-i-spell ::= 'I SPELL'
+i-spell ::= pause 'I SPELL' pause pause
 
-initials ::= 'INITIALS'
+initials ::= 'INITIALS' pause
 
-figures ::= 'FIGURES'
+figures ::= 'FIGURES' pause
 
-phone-figures ::= 'PHONE FIGURES'
+phone-figures ::= 'PHONE FIGURES' pause
 
-mixed-group-figures ::= 'MIXED GROUP FIGURES'
+mixed-group-figures ::= 'MIXED GROUP FIGURES' pause
 
-mixed-group-letters ::= 'MIXED GROUP LETTERS'
+mixed-group-letters ::= 'MIXED GROUP LETTERS' pause
 
 break ::= 'BREAK'
 
-end-and-no-more ::= 'END AND NO MORE'
+end-and-no-more ::= 'END, AND NO MORE'
 
-pause ::= '. \n'
+pause ::= '<AUDIO SRC="file:///tmp/blank.wav"/>'
 
-big-pause ::= '.\n.\n.\n'
+big-pause ::= pause pause pause pause
