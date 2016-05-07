@@ -1,0 +1,171 @@
+message ::= preamble break address phone break text break signature end
+
+text ::= text-element | text-element X text
+
+text-element ::= sentence | fg number | int (letter ' ')+ | mg ( (letter | digit) ' ' )+
+
+sentence ::= object 'is' adjective
+
+object ::= 'the farm' | 'the tree' | 'the road'
+
+adjective ::= 'burning' | 'okay' | 'on fire' | 'flooded' | 'damaged' | 'repaired'
+
+signature ::= name
+
+end ::= 'end and no more'
+
+break ::= nl 'break' nl
+
+mg ::= 'mixed group'
+
+fg ::= 'figures'
+
+int ::= 'initials'
+
+nl ::= '\n'
+
+preamble ::= message-number s precedence s hx s station-of-origin s check place-of-origin [time-filed] date
+
+s ::= '.\n\n'
+
+place-of-origin ::= town province
+
+address ::= name big-number road-name road-type town province postal-code
+
+phone ::= fg area-code.local-number
+
+area-code ::= ('2'|'3'|'4'|'5'|'6'|'7'|'8').digit.digit
+
+local-number ::= digit-nz.digit.digit.digit.digit.digit.digit
+
+name ::= first-name last-name
+
+first-name ::= 'John' | 'Mary'
+
+last-name ::= 'Johnson' | 'Robertson'
+
+postal-code ::= mg letter digit letter digit letter digit
+
+road-name ::= 'Lakeside' | 'Canada' | 'Farm' | 'Parliament'
+
+road-type ::= 'avenue' | 'road' | 'boulevard'
+
+town ::= town-thing.'town'
+
+town-thing ::= 'Spring'|'Beaver'|'Cobble'|'Mountain'|'Forest'
+
+time-filed ::= hours.minutes
+
+hours ::= (nothing|'1').digit-nz | '2'.('0'|'1'|'2'|'3')
+
+nothing ::= ''
+
+minutes ::= ('0'|'1'|'2'|'3'|'4'|'5').digit-nz
+
+province ::= 'AB'|'BC'|'MN'|'ON'|'SK'|'QC'
+
+message-number ::= number
+
+precedence ::= ['exercise'] (R | W | P | E)
+
+hx ::= H X handling
+
+handling ::= hx-collect-call | hx-timeout | hx-report-tod | hx-report-id | hx-get-reply | hx-hold-until | hx-mail-or-landline
+
+hx-collect-call ::= A [small-number]
+
+hx-timeout ::= B [small-number]
+
+hx-report-tod ::= C
+
+hx-report-id ::= D
+
+hx-get-reply ::= E
+
+hx-hold-until ::= F date
+
+hx-mail-or-landline ::= G
+
+date ::= decimal-month.decimal-day
+
+decimal-month ::= digit-nz | '1'.('0'|'1'|'2')
+
+decimal-day ::= ('0'|'1'|'2').digit-nz | '3'.('0'|'1')
+
+small-number ::= digit-nz | digit-nz.digit
+
+big-number ::= digit-nz.digit.digit | digit-nz.digit.digit.digit
+
+station-of-origin ::= callsign
+
+callsign ::= callsign-ca
+
+callsign-ca ::= V (A|E) ('1'|'2'|'3'|'4'|'5'|'6'|'7') letter letter [letter]
+
+letter ::= A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z
+
+check ::= count | count slash count
+
+count ::= digit-nz | '1'.digit-nz | '2'.('0'|'1'|'2'|'3'|'4'|'5')
+
+slash ::= 'slash'
+
+A ::= 'alpha'
+
+B ::= 'bravo'
+
+C ::= 'charlie'
+
+D ::= 'delta'
+
+E ::= 'echo'
+
+F ::= 'foxtrot'
+
+G ::= 'golf'
+
+H ::= 'hotel'
+
+I ::= 'india'
+
+J ::= 'juliet'
+
+K ::= 'kilo'
+
+L ::= 'lima'
+
+M ::= 'mike'
+
+N ::= 'november'
+
+O ::= 'oscar'
+
+P ::= 'papa'
+
+Q ::= 'quebec'
+
+R ::= 'romeo'
+
+S ::= 'sierra'
+
+T ::= 'tango'
+
+U ::= 'uniform'
+
+V ::= 'victor'
+
+W ::= 'whisky'
+
+X ::= 'x-ray'
+
+Y ::= 'yankee'
+
+Z ::= 'zulu'
+
+number ::= digit-nz.digit*
+
+digit-nz ::= '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
+
+digit ::= '0'|digit-nz
+
+start ::= message
