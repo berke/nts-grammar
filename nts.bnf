@@ -13,13 +13,9 @@ start ::= sable-preamble start-production sable-postamble
 start-production ::= message
 #start-production ::= sentence
 
-sable-preamble ::= '<?xml version="1.0"?>
-<!DOCTYPE SABLE PUBLIC "-//SABLE//DTD SABLE speech mark up//EN"
-      "Sable.v0_2.dtd"
-[]>
-<SABLE><SPEAKER NAME="male1"><RATE SPEED="-20%">'
+sable-preamble ::= '<?xml version="1.0"?><!DOCTYPE SABLE PUBLIC "-//SABLE//DTD SABLE speech mark up//EN" "Sable.v0_2.dtd"[]><SABLE><SPEAKER NAME="male1"><RATE SPEED="-20%">\n'
 
-sable-postamble ::= '</RATE></SPEAKER></SABLE>'
+sable-postamble ::= '\n</RATE></SPEAKER></SABLE>\n'
 
 # A (simple) message starts with the word "Number" and then contains the preamble,
 # the destination address and phone number, then the message text and the
@@ -50,7 +46,7 @@ preamble ::=
 
 # The message number is just a number.  The number production is defined later.
 
-message-number ::= number
+message-number ::= small-number
 
 # The precedence is either routine, welfare, priority or emergency.
 # According to the NTS handbook this is voiced as the actual word and not the
@@ -68,7 +64,7 @@ precedence ::= ['exercise'] ('routine' | 'welfare' | 'priority' | 'emergency')
 # NOTE: In this grammar, single-letter uppercase productions refer to
 # the IPA pronunciation of the corresponding letter.
 
-hx ::= H X handling-code
+hx ::= H X handling-code pause
 
 handling-code ::=
   hx-collect-call
@@ -167,15 +163,15 @@ local-number ::= digit-nz pause digit pause digit pause digit pause digit pause 
 # If the time is local an L must be added.  This should only be used for intra-provincial
 # communications.
 
-time-filed ::= hours.minutes.[timezone]
+time-filed ::= hours minutes [timezone]
 
 timezone ::= L | Z
 
-hours ::= (nothing|'1').digit-nz | '2'.('0'|'1'|'2'|'3')
+hours ::= (nothing|'1') digit-nz | '2' ('0'|'1'|'2'|'3')
 
 nothing ::= ''
 
-minutes ::= ('0'|'1'|'2'|'3'|'4'|'5').digit-nz
+minutes ::= ('0'|'1'|'2'|'3'|'4'|'5') digit-nz
 
 # The message is either an ARL message, or an abitrary sequence of groups.
 
@@ -344,9 +340,9 @@ digit-nz ::= '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
 
 digit ::= '0'|digit-nz
 
-small-number ::= digit-nz | digit-nz.digit
+small-number ::= digit-nz | digit-nz digit
 
-big-number ::= digit-nz.digit.digit | digit-nz.digit.digit.digit
+big-number ::= digit-nz digit digit | digit-nz digit digit digit
 
 # Prowords (procedure words) are wrapped in grammar productions for
 # clarity.  They are produced using upper case.
