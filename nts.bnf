@@ -14,7 +14,7 @@ start ::= message
 # the destination address and phone number, then the message text and the
 # signature.
 
-message ::= proword-number preamble address phone break text break signature end
+message ::= preamble big-pause address pause phone break text break signature pause end-and-no-more
 
 # The "s" production is basically a pause.  It is defined here to produce a dot
 # and two new lines as this is useful when using this grammar to automatically
@@ -29,9 +29,12 @@ s ::= '.\n\n'
 # message was filed, and the date
 
 preamble ::=
-  message-number precedence hx
-  station-of-origin check
-  place-of-origin
+  proword-number message-number pause
+  precedence pause
+  hx pause
+  station-of-origin pause
+  check pause
+  place-of-origin pause
   [time-filed] date
 
 # The message number is just a number.  The number production is defined later.
@@ -138,7 +141,7 @@ last-name ::=
 # Phone numbers should start with "phone figures" and include the area code and the local number
 # It is not clear how extensions, if any, would be handled.
 
-phone ::= 'phone figures' area-code local-number
+phone ::= phone-figures area-code local-number
 
 area-code ::= ('2'|'3'|'4'|'5'|'6'|'7'|'8') digit digit
 
@@ -192,9 +195,12 @@ group ::= sentence | group-figures | group-initials | group-mixed
 sentence ::=
   'the' ('building' | 'house' | 'factory' | 'farm') 'at' local-address 'is' ('on fire' | 'flooded' | 'repaired')
 | 'need more' ('water' | 'food' | 'blankets' | 'tents' | 'penicilline')
-| name ('is ok'|'was injured on' date|'is recovering at' town 'hospital'|'is unfortunately deceased'|'missing since' date)
+| name ('is ok'|'was injured on' date 'condition' ('stable'|'critical') | 'is recovering at' town 'hospital'|'is unfortunately deceased'|'missing since' date)
 | 'send' ('help'|'ambulance'|'firefighters'|'mechanic')
+| 'send' small-number ('l of water' | 'doses of peniciline' | 'rations of food' | 'pills of iodine' | 'radiation suits' | 'air filters') ('urgently' | 'as soon as possible' | 'when convenient')
 | 'regards'
+| ('smoke'|'radiation'|'water level') ('increasing'|'decreasing'|'stable')
+| small-number 'persons sheltered at' local-address
 | 'access code is' group-mixed
 
 # Numbers should start with the proword 'figures'
@@ -319,7 +325,9 @@ letter ::= A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z
 
 # The following productions are used to define numbers
 
-number ::= digit-nz.digit*
+number ::= digit-nz.digits
+
+digits ::= digit | digit.digits
 
 digit-nz ::= '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
 
@@ -347,12 +355,16 @@ initials ::= 'INITIALS'
 
 figures ::= 'FIGURES'
 
+phone-figures ::= 'PHONE FIGURES'
+
 mixed-group-figures ::= 'MIXED GROUP FIGURES'
 
 mixed-group-letters ::= 'MIXED GROUP LETTERS'
 
 break ::= 'BREAK'
 
-end ::= 'END'
-
 end-and-no-more ::= 'END AND NO MORE'
+
+pause ::= '. \n'
+
+big-pause ::= '.\n.\n.\n'
